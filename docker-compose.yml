@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+ 
+  proxy:
+    image: nginx
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    restart: always
+
+  gitlab:
+    image: gitlab/gitlab-ee:latest
+    container_name: gitlab
+    hostname: gitlab.local
+    restart: always
+    ports:
+      - "8080:80"
+      - "443:443"
+      - "2222:22"
+    volumes:
+      - /srv/gitlab/config:/etc/gitlab
+      - /srv/gitlab/logs:/var/log/gitlab
+      - /srv/gitlab/data:/var/opt/gitlab
+    shm_size: '256m'
+
+  runner:
+    image: gitlab/gitlab-runner:latest
+    container_name: gitlab-runner
+    restart: always
+    depends_on:
+      - gitlab
+    volumes:
+      - /srv/gitlab-runner/config:/etc/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  student1:
+    image: nginx
+    container_name: student1
+    ports:
+      - "8181:80"
+    restart: always
+
+  student2:
+    image: nginx
+    container_name: student2
+    ports:
+      - "8282:80"
+    restart: always
+
